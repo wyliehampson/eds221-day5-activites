@@ -1,0 +1,64 @@
+---
+title: "U.S. Tilapia Imports"
+author: "Wylie Hampson"
+date: "8/13/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(janitor)
+library(here)
+```
+
+## Read in the tilapia data.
+
+```{r}
+us_tilapia_imports <- read_csv(here::here("data", "us_tilapia_imports.csv"))
+
+# Explore the data
+summary(us_tilapia_imports)
+names(us_tilapia_imports)
+dim(us_tilapia_imports)
+skimr::skim(us_tilapia_imports)
+```
+
+## Rearrange the data frame
+
+```{r}
+us_tilapia_imports_long <- us_tilapia_imports %>% pivot_longer(-country,
+                                                               names_to = "year",
+                                                               values_to = "weight")
+
+# Change year to numeric class
+us_tilapia_imports_long$year <- as.numeric(us_tilapia_imports_long$year)
+
+# Find total U.S. imports of tilapia by year
+yearly_tilapia_tot <- us_tilapia_imports_long %>% 
+  group_by(year) %>% 
+  summarize(tot_weight = sum(weight, na.rm = TRUE)) 
+
+# Now plot it
+yearly_tilapia_plot <- ggplot(data = yearly_tilapia_tot, aes(x = year, y = tot_weight)) +
+  geom_line() +
+  labs(x = "Year",
+       y = "Total Weight (Thousands of Lbs)",
+       title = "Imported Tilapia Weight to the U.S.")
+
+yearly_tilapia_plot
+
+# Save the plot
+ggsave(here::here("figs", "yearly_tilapia_plot.png"), plot = yearly_tilapia_plot)
+```
+
+
+
+
+
+
+
+
+
+
+
